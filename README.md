@@ -6,8 +6,10 @@ An opinionated helper script for running a node app in a container during develo
 
 ## Features
 
-* Builds app and runs it. When files change the app is killed, rebuilt and restarted
-* To speed up expensive processes (e.g. preprocessing) app source code is copied from docker volume to local docker fs when files change.
+* Builds app and runs it
+* When files change the app is killed, rebuilt and restarted
+* If the app crashes the error is displayed and restarted when files change again
+* To speed up expensive processes (e.g. preprocessing) app source code is copied from docker volume to local docker fs when files change
 
 ### Dependencies
 
