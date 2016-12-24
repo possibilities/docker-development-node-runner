@@ -61,8 +61,8 @@ const runProcess = (command, options) => {
   childProcess.stdout.on('data', d => outputLines.push(d.toString()))
 
   // TODO this is useful somethimes
-  // childProcess.stdout.pipe(process.stdout)
-  // childProcess.stderr.pipe(process.stderr)
+  childProcess.stdout.pipe(process.stdout)
+  childProcess.stderr.pipe(process.stderr)
 
   registerChildProcess(command, childProcess)
 
@@ -74,9 +74,12 @@ const runAppCommand = 'yarn run start'
 const syncInitialApp = async () => {
   console.info(' - sync initial app')
 
+  console.log(0)
   if (await exists(workDir)) {
+    console.log(1)
     return Promise.resolve()
   } else {
+    console.log(2)
     return copy(appDir, workDir)
   }
 }
