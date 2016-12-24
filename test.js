@@ -10,12 +10,14 @@ const runCommand = () => {
   fs.copySync('./example-app', '/tmp/doof')
   const running = spawn('./bin/node-runner', ['/tmp/doof', '/tmp/moof'])
 
-  // TODO capture output here, we can play it back on error
+  // TODO this is useful to uncomment sometimes
+  // running.childprocess.stdout.pipe(process.stdout)
+  // running.childprocess.stderr.pipe(process.stderr)
 
   return running
 }
 
-const TIMEOUT = 3000
+const TIMEOUT = 2000
 const PORT = 55555
 const URL = `http://localhost:${PORT}`
 
@@ -29,8 +31,7 @@ describe('node runner', () => {
         if (error) return done(error)
 
         assert.equal(res.body, '`default` example response')
-        terminate(running.pid)
-        done()
+        terminate(running.pid, done)
       })
     }, TIMEOUT)
   })
@@ -53,8 +54,7 @@ describe('node runner', () => {
               if (error) return done(error)
 
               assert.equal(res.body, '`updated` example response')
-              terminate(running.pid)
-              done()
+              terminate(running.pid, done)
             })
           }, TIMEOUT)
         })
