@@ -46,11 +46,9 @@ describe('node runner', () => {
     waitForBodyToContain(running, '`default` example response', done)
   })
 
-  describe('when a file changes', () => {
-    it('restarts app', done => {
-      const running = runCommand()
-      replaceInAppIndex('default', '!!!changed!!!')
-      waitForBodyToContain(running, '`!!!changed!!!` example response', done)
-    })
+  it('restarts app when a file changes', done => {
+    const running = runCommand()
+    replaceInAppIndex('default', '!!!changed!!!')
+    waitForBodyToContain(running, '`!!!changed!!!` example response', done)
   })
 })
