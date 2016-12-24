@@ -74,7 +74,7 @@ const runAppCommand = 'yarn run start'
 const syncInitialApp = async () => {
   console.info(' - sync initial app')
 
-  console.log(0)
+  console.log(0, await exists(workDir), workDir)
   if (await exists(workDir)) {
     console.log(1)
     return Promise.resolve()
