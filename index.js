@@ -74,7 +74,7 @@ const installApp = () => {
 }
 const buildApp = () => {
   console.info(' - build app')
-  runProcess('yarn run build', { cwd: workDir })
+  return runProcess('yarn run build', { cwd: workDir })
 }
 
 let isRestarting = false
