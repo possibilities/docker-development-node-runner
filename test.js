@@ -30,7 +30,7 @@ const expectAppEndpointToContain = (expectedBody, callback) => {
   setTimeout(() => {
     // Make a request to assert against the response
     request(URL, (error, res) => {
-      if (error) return done(error)
+      if (error) return callback(error)
 
       // Assert the app has the correct output
       assert.equal(res.body, expectedBody)
