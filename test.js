@@ -32,6 +32,7 @@ const URL = `http://localhost:${PORT}`
 describe('node runner', () => {
   it('runs app', done => {
     const running = runCommand()
+
     setTimeout(() => {
       request(URL, (error, res) => {
         if (error) return done(error)
@@ -45,22 +46,14 @@ describe('node runner', () => {
   describe('when a file changes', () => {
     it('restarts app', done => {
       const running = runCommand()
+      replaceInAppIndex('default', 'updated')
+
       setTimeout(() => {
         request(URL, (error, res) => {
           if (error) return done(error)
 
-          assert.equal(res.body, '`default` example response')
-
-          replaceInAppIndex('default', 'updated')
-
-          setTimeout(() => {
-            request(URL, (error, res) => {
-              if (error) return done(error)
-
-              assert.equal(res.body, '`updated` example response')
-              terminate(running.pid, done)
-            })
-          }, TIMEOUT)
+          assert.equal(res.body, '`updated` example response')
+          terminate(running.pid, done)
         })
       }, TIMEOUT)
     })
