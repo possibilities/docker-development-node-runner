@@ -71,14 +71,16 @@ const runProcess = (command, options) => {
 
 const runAppCommand = 'yarn run start'
 
-const syncInitialApp = () => {
+const syncInitialApp = async () => {
   console.info(' - sync initial app')
+
   if (await exists(workDir)) {
     return Promise.resolve()
   } else {
     return copy(appDir, workDir)
   }
 }
+
 const installApp = () => {
   console.info(' - install app')
   return runProcess('yarn install', { cwd: workDir })
