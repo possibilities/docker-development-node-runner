@@ -25,6 +25,10 @@ const replaceStringInAppIndexJs = (findString, replaceString) => {
   fs.writeFileSync(contentPath, content.replace(findString, replaceString))
 }
 
+const touchAppIndexJs = () => {
+  replaceStringInAppIndexJs('', '')
+}
+
 const expectAppEndpointToContain = (expectedBody, callback) => {
   // Wait some time for the app to restart
   setTimeout(() => {
@@ -33,8 +37,12 @@ const expectAppEndpointToContain = (expectedBody, callback) => {
       if (error) return callback(error)
 
       // Assert the app has the correct output
-      assert.equal(res.body, expectedBody)
-      callback()
+      assert.ok(
+        res.body.indexOf(expectedBody) >= 0,
+        `Expected '${res.body}' to contain '${expectedBody}'`
+      )
+
+      callback(res.body)
     })
   }, TIMEOUT)
 }
@@ -65,7 +73,7 @@ describe('node runner', () => {
   afterEach(done => terminate(runningCommand.pid, done))
 
   it('runs app', done => {
-    expectAppEndpointToContain('`default` example response', done)
+    expectAppEndpointToContain('`default` example response', () => done())
   })
 
   it('restarts app when a file changes', done => {
@@ -74,7 +82,7 @@ describe('node runner', () => {
       // Update script to change response
       replaceStringInAppIndexJs('default', '!!!changed!!!')
       // Check response is updated
-      expectAppEndpointToContain('`!!!changed!!!` example response', done)
+      expectAppEndpointToContain('`!!!changed!!!` example response', () => done())
     })
   })
 
@@ -83,12 +91,28 @@ describe('node runner', () => {
     expectAppEndpointToContain('`default` example response', () => {
       // Update script in a way that breaks it
       replaceStringInAppIndexJs('(', 'THIS_SHOULD_BE_AN_OPEN_PARENTH')
+      // Make sure it doesn't respond
       expectAppEndpointToBeUnresponsive(() => {
+        // Fix it and assert it responds
         replaceStringInAppIndexJs('THIS_SHOULD_BE_AN_OPEN_PARENTH', '(')
-        expectAppEndpointToContain('`default` example response', done)
+        expectAppEndpointToContain('`default` example response', () => done())
       })
     })
   })
 
-  it('builds app before restarting')
+  it('builds app before restarting', done => {
+    // Check default response
+    expectAppEndpointToContain('`default` example response', initialBody => {
+      // Touch the file to cause a rebuild without changing anything
+      touchAppIndexJs()
+      // Check response is updated
+      expectAppEndpointToContain('`default` example response', updatedBody => {
+        assert.ok(
+          updatedBody !== initialBody,
+          `Expected '${initialBody}' to differ from '${updatedBody}'`
+        )
+        done()
+      })
+    })
+  })
 })
