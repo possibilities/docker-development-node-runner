@@ -54,11 +54,15 @@ describe('node runner', () => {
   })
 
   it('restarts app when a file changes', done => {
-    replaceStringInAppIndexJs('default', '!!!changed!!!')
-    expectAppEndpointToContain('`!!!changed!!!` example response', done)
+    // Check default response
+    expectAppEndpointToContain('`default` example response', () => {
+      // Update script to change response
+      replaceStringInAppIndexJs('default', '!!!changed!!!')
+      // Check response is updated
+      expectAppEndpointToContain('`!!!changed!!!` example response', done)
+    })
   })
 
-  // TODO fill in missing tests, plenty of room for other tests
   it('recovers after broken app is repaired')
   it('builds app before restarting')
 })
