@@ -17,6 +17,12 @@ const runCommand = () => {
   return running
 }
 
+const replaceInAppIndex = (findString, replaceString) => {
+  const contentPath = '/tmp/doof/index.js'
+  const content = fs.readFileSync(contentPath).toString()
+  fs.writeFileSync(contentPath, content.replace(findString, replaceString))
+}
+
 const TIMEOUT = 2000
 const PORT = 55555
 const URL = `http://localhost:${PORT}`
@@ -45,9 +51,7 @@ describe('node runner', () => {
 
           assert.equal(res.body, '`default` example response')
 
-          const contentPath = '/tmp/doof/index.js'
-          const content = fs.readFileSync(contentPath).toString()
-          fs.writeFileSync(contentPath, content.replace('default', 'updated'))
+          replaceInAppIndex('default', 'updated')
 
           setTimeout(() => {
             request(URL, (error, res) => {
