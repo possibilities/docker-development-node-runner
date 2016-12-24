@@ -29,33 +29,28 @@ const URL = `http://localhost:${PORT}`
 
 // NOTE testing is rather shallow
 
+const waitForBodyToContain = (running, expectedBody, done) => {
+  setTimeout(() => {
+    request(URL, (error, res) => {
+      if (error) return done(error)
+
+      assert.equal(res.body, expectedBody)
+      terminate(running.pid, done)
+    })
+  }, TIMEOUT)
+}
+
 describe('node runner', () => {
   it('runs app', done => {
     const running = runCommand()
-
-    setTimeout(() => {
-      request(URL, (error, res) => {
-        if (error) return done(error)
-
-        assert.equal(res.body, '`default` example response')
-        terminate(running.pid, done)
-      })
-    }, TIMEOUT)
+    waitForBodyToContain(running, '`default` example response', done)
   })
 
   describe('when a file changes', () => {
     it('restarts app', done => {
       const running = runCommand()
-      replaceInAppIndex('default', 'updated')
-
-      setTimeout(() => {
-        request(URL, (error, res) => {
-          if (error) return done(error)
-
-          assert.equal(res.body, '`updated` example response')
-          terminate(running.pid, done)
-        })
-      }, TIMEOUT)
+      replaceInAppIndex('default', '!!!changed!!!')
+      waitForBodyToContain(running, '`!!!changed!!!` example response', done)
     })
   })
 })
