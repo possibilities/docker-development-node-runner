@@ -60,9 +60,8 @@ const runProcess = (command, options) => {
   childProcess.stderr.on('data', d => outputLines.push(d.toString()))
   childProcess.stdout.on('data', d => outputLines.push(d.toString()))
 
-  // TODO this is useful somethimes
-  // childProcess.stdout.pipe(process.stdout)
-  // childProcess.stderr.pipe(process.stderr)
+  childProcess.stdout.pipe(process.stdout)
+  childProcess.stderr.pipe(process.stderr)
 
   registerChildProcess(command, childProcess)
 
@@ -85,14 +84,15 @@ const installApp = () => {
   console.info(' - install app')
   return runProcess('yarn install', { cwd: workDir })
 }
+
 const buildApp = () => {
-  process.stdout.write(' - build app ')
+  console.info(' - build app ')
   const start = new Date().getTime()
   const running = runProcess('yarn run build', { cwd: workDir })
   running.childProcess.on('exit', code => {
     if (code !== null) {
       const elapsedSeconds = (new Date().getTime() - start) / 1000
-      process.stdout.write(`${elapsedSeconds}s\n`)
+      console.info(` - build app finished in ${elapsedSeconds} seconds`)
     }
   })
   return running
