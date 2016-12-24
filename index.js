@@ -8,7 +8,6 @@ const {
   copy,
   remove,
   existsSync,
-  removeSync,
 } = require('fs-promise')
 
 const appDir = process.argv[2]
@@ -18,8 +17,6 @@ if (!existsSync(appDir) || !workDir) {
   console.error('Usage: node-runner /app-dir /temp-work-dir')
   process.exit()
 }
-
-removeSync(workDir)
 
 const childProcesses = {}
 
