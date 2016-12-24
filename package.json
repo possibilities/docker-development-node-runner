@@ -1,6 +1,16 @@
 {
   "name": "docker-development-node-runner",
+  "description": "An opinionated helper script for running a node app in a container during development",
   "version": "0.0.1",
+  "engines": {
+    "node": ">=6.9"
+  },
+  "repository": {
+    "url": "https://github.com/possibilities/docker-development-node-runner",
+    "type": "git"
+  },
+  "author": "Mike Bannister <mikebannister@gmail.com>",
+  "license": "MIT",
   "bin": {
     "node-runner": "bin/node-runner"
   },
