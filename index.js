@@ -86,8 +86,16 @@ const installApp = () => {
   return runProcess('yarn install', { cwd: workDir })
 }
 const buildApp = () => {
-  console.info(' - build app')
-  return runProcess('yarn run build', { cwd: workDir })
+  process.stdout.write(' - build app ')
+  const start = new Date().getTime()
+  const running = runProcess('yarn run build', { cwd: workDir })
+  running.childProcess.on('exit', code => {
+    if (code !== null) {
+      const elapsedSeconds = (new Date().getTime() - start) / 1000
+      process.stdout.write(`${elapsedSeconds}s\n`)
+    }
+  })
+  return running
 }
 
 let isRestarting = false
