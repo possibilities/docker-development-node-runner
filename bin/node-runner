@@ -1,5 +1,4 @@
 #!/usr/bin/env node
 
 // TODO this could be slow, consider pretranspiling
-require('async-to-gen/register')
-require('../index.js')
+require('../transpiled-index.js')
