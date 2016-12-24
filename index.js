@@ -1,8 +1,15 @@
 const { spawn } = require('child-process-promise')
-const { copy, remove, existsSync, removeSync } = require('fs-promise')
 const { watch } = require('chokidar')
 const path = require('path')
 const terminate = require('terminate')
+
+const {
+  exists,
+  copy,
+  remove,
+  existsSync,
+  removeSync,
+} = require('fs-promise')
 
 const appDir = process.argv[2]
 const workDir = process.argv[3]
@@ -66,7 +73,11 @@ const runAppCommand = 'yarn run start'
 
 const syncInitialApp = () => {
   console.info(' - sync initial app')
-  return copy(appDir, workDir)
+  if (await exists(workDir)) {
+    return Promise.resolve()
+  } else {
+    return copy(appDir, workDir)
+  }
 }
 const installApp = () => {
   console.info(' - install app')
