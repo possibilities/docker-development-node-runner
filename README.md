@@ -17,7 +17,7 @@ Must be run on a container with
 
 * node js 6 or greater
 
-App exposes functionality via `package.json#scripts`:
+App exposes functionality via `package.json`'s `scripts` key:
 
 * `build`: runs before the app is started and restarted
 * `start`: starts the app
