@@ -39,6 +39,21 @@ const expectAppEndpointToContain = (expectedBody, callback) => {
   }, TIMEOUT)
 }
 
+const expectAppEndpointToBeUnresponsive = callback => {
+  // Wait some time for the app to restart
+  setTimeout(() => {
+    // Make a request to assert against the response
+    request(URL, (error, res) => {
+      // We should experience an error
+      if (error) {
+        callback()
+      } else {
+        callback(new Error('Error was expected when server is broken'))
+      }
+    })
+  }, TIMEOUT)
+}
+
 describe('node runner', () => {
   let runningCommand
 
@@ -63,6 +78,17 @@ describe('node runner', () => {
     })
   })
 
-  it('recovers after broken app is repaired')
+  it('recovers after broken app is repaired', done => {
+    // Check default response
+    expectAppEndpointToContain('`default` example response', () => {
+      // Update script in a way that breaks it
+      replaceStringInAppIndexJs('(', 'THIS_SHOULD_BE_AN_OPEN_PARENTH')
+      expectAppEndpointToBeUnresponsive(() => {
+        replaceStringInAppIndexJs('THIS_SHOULD_BE_AN_OPEN_PARENTH', '(')
+        expectAppEndpointToContain('`default` example response', done)
+      })
+    })
+  })
+
   it('builds app before restarting')
 })
