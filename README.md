@@ -11,13 +11,13 @@ An opinionated helper script for running a node app in a container during develo
 * If the app crashes the error is displayed and restarted when files change again
 * To speed up expensive processes (e.g. preprocessing) app source code is copied from docker volume to local docker fs when files change
 
-### Dependencies
+## Requirements
 
-Must be run on a container with
+NodeJS 6+
 
-* node js 6 or greater
+### Usage
 
-App exposes functionality via `package.json`'s `scripts` key:
+Apps expose functionality via `package.json`'s `scripts` key:
 
 * `build`: runs before the app is started and restarted
 * `start`: starts the app

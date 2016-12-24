@@ -2,7 +2,7 @@ machine:
   pre:
     - mkdir ~/.yarn-cache
   node:
-    version: 6
+    version: 7
 dependencies:
   pre:
     - curl -o- -L https://yarnpkg.com/install.sh | bash
@@ -12,4 +12,5 @@ dependencies:
     - yarn install
 test:
   override:
-    - yarn test
+    - nvm use 6 && yarn test
+    - nvm use 7 && yarn test
