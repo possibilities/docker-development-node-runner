@@ -16,7 +16,8 @@
   },
   "files": [
     "transpiled-index.js",
-    "bin/node-runner"
+    "bin/node-runner",
+    "index.js"
   ],
   "scripts": {
     "test": "mocha test.js --timeout 30000",
