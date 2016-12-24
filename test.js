@@ -4,61 +4,115 @@ const fs = require('fs-promise')
 const request = require('request')
 const terminate = require('terminate')
 
-const runCommand = () => {
-  fs.removeSync('/tmp/doof')
-  fs.removeSync('/tmp/moof')
-  fs.copySync('./example-app', '/tmp/doof')
-  const running = spawn('./bin/node-runner', ['/tmp/doof', '/tmp/moof'])
-
-  // TODO this is useful to uncomment sometimes
-  // running.childprocess.stdout.pipe(process.stdout)
-  // running.childprocess.stderr.pipe(process.stderr)
-
-  return running
-}
-
-const TIMEOUT = 2000
+const TIMEOUT = 1500
 const PORT = 55555
 const URL = `http://localhost:${PORT}`
 
-// NOTE testing is rather shallow
+const setupFilesystemSync = () => {
+  fs.removeSync('/tmp/doof')
+  fs.removeSync('/tmp/moof')
+  fs.copySync('./example-app', '/tmp/doof')
+}
+
+const runCommand = () => spawn('./bin/node-runner', [
+  '/tmp/doof',
+  '/tmp/moof'
+])
+
+const replaceStringInAppIndexJs = (findString, replaceString) => {
+  const contentPath = '/tmp/doof/index.js'
+  const content = fs.readFileSync(contentPath).toString()
+  fs.writeFileSync(contentPath, content.replace(findString, replaceString))
+}
+
+const touchAppIndexJs = () => {
+  replaceStringInAppIndexJs('', '')
+}
+
+const expectAppEndpointToContain = (expectedBody, callback) => {
+  // Wait some time for the app to restart
+  setTimeout(() => {
+    // Make a request to assert against the response
+    request(URL, (error, res) => {
+      if (error) return callback(error)
+
+      // Assert the app has the correct output
+      assert.ok(
+        res.body.indexOf(expectedBody) >= 0,
+        `Expected '${res.body}' to contain '${expectedBody}'`
+      )
+
+      callback(res.body)
+    })
+  }, TIMEOUT)
+}
+
+const expectAppEndpointToBeUnresponsive = callback => {
+  // Wait some time for the app to restart
+  setTimeout(() => {
+    // Make a request to assert against the response
+    request(URL, (error, res) => {
+      // We should experience an error
+      if (error) {
+        callback()
+      } else {
+        callback(new Error('Error was expected when server is broken'))
+      }
+    })
+  }, TIMEOUT)
+}
 
 describe('node runner', () => {
-  it('runs app', done => {
-    const running = runCommand()
-    setTimeout(() => {
-      request(URL, (error, res) => {
-        if (error) return done(error)
+  let runningCommand
 
-        assert.equal(res.body, '`default` example response')
-        terminate(running.pid, done)
-      })
-    }, TIMEOUT)
+  beforeEach(() => {
+    setupFilesystemSync()
+    runningCommand = runCommand()
   })
 
-  describe('when a file changes', () => {
-    it('restarts app', done => {
-      const running = runCommand()
-      setTimeout(() => {
-        request(URL, (error, res) => {
-          if (error) return done(error)
+  afterEach(done => terminate(runningCommand.pid, done))
 
-          assert.equal(res.body, '`default` example response')
+  it('runs app', done => {
+    expectAppEndpointToContain('`default` example response', () => done())
+  })
 
-          const contentPath = '/tmp/doof/index.js'
-          const content = fs.readFileSync(contentPath).toString()
-          fs.writeFileSync(contentPath, content.replace('default', 'updated'))
+  it('restarts app when a file changes', done => {
+    // Check default response
+    expectAppEndpointToContain('`default` example response', () => {
+      // Update script to change response
+      replaceStringInAppIndexJs('default', '!!!changed!!!')
+      // Check response is updated
+      expectAppEndpointToContain('`!!!changed!!!` example response', () => done())
+    })
+  })
 
-          setTimeout(() => {
-            request(URL, (error, res) => {
-              if (error) return done(error)
+  it('recovers after broken app is repaired', done => {
+    // Check default response
+    expectAppEndpointToContain('`default` example response', () => {
+      // Update script in a way that breaks it
+      replaceStringInAppIndexJs('(', 'THIS_SHOULD_BE_AN_OPEN_PARENTH')
+      // Make sure it doesn't respond
+      expectAppEndpointToBeUnresponsive(() => {
+        // Fix it and assert it responds
+        replaceStringInAppIndexJs('THIS_SHOULD_BE_AN_OPEN_PARENTH', '(')
+        expectAppEndpointToContain('`default` example response', () => done())
+      })
+    })
+  })
 
-              assert.equal(res.body, '`updated` example response')
-              terminate(running.pid, done)
-            })
-          }, TIMEOUT)
-        })
-      }, TIMEOUT)
+  it('builds app before restarting', done => {
+    // Check default response
+    expectAppEndpointToContain('`default` example response', initialBody => {
+      // Touch the file to cause a rebuild without changing anything
+      touchAppIndexJs()
+      // Check response is updated
+      expectAppEndpointToContain('`default` example response', updatedBody => {
+        assert.ok(
+          updatedBody !== initialBody,
+          `Expected '${initialBody}' to differ from '${updatedBody}'`
+        )
+        done()
+      })
     })
   })
 })

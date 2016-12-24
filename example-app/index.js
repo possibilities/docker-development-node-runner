@@ -7,7 +7,8 @@ const headers = { 'Content-Type': 'text/plain' }
 
 const server = http.createServer((request, response) => {
   response.writeHead(200, headers)
-  response.end('`default` example response')
+  const message = fs.readFileSync('./message.txt').toString().trim()
+  response.end(`\`default\` example response (${message})`)
 })
 
 server.listen(PORT)
