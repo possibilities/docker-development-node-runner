@@ -4,11 +4,11 @@ const fs = require('fs-promise')
 const request = require('request')
 const terminate = require('terminate')
 
-const TIMEOUT = 2000
+const TIMEOUT = 1500
 const PORT = 55555
 const URL = `http://localhost:${PORT}`
 
-const cleanupSync = () => {
+const setupFilesystemSync = () => {
   fs.removeSync('/tmp/doof')
   fs.removeSync('/tmp/moof')
   fs.copySync('./example-app', '/tmp/doof')
@@ -25,26 +25,29 @@ const replaceStringInAppIndexJs = (findString, replaceString) => {
   fs.writeFileSync(contentPath, content.replace(findString, replaceString))
 }
 
-// NOTE testing is rather shallow
+const expectAppEndpointToContain = (expectedBody, callback) => {
+  // Wait some time for the app to restart
+  setTimeout(() => {
+    // Make a request to assert against the response
+    request(URL, (error, res) => {
+      if (error) return done(error)
+
+      // Assert the app has the correct output
+      assert.equal(res.body, expectedBody)
+      callback()
+    })
+  }, TIMEOUT)
+}
 
 describe('node runner', () => {
   let runningCommand
 
   beforeEach(() => {
-    cleanupSync()
+    setupFilesystemSync()
     runningCommand = runCommand()
   })
 
-  const expectAppEndpointToContain = (expectedBody, callback) => {
-    setTimeout(() => {
-      request(URL, (error, res) => {
-        if (error) return done(error)
-
-        assert.equal(res.body, expectedBody)
-        terminate(runningCommand.pid, callback)
-      })
-    }, TIMEOUT)
-  }
+  afterEach(done => terminate(runningCommand.pid, done))
 
   it('runs app', done => {
     expectAppEndpointToContain('`default` example response', done)
@@ -54,4 +57,8 @@ describe('node runner', () => {
     replaceStringInAppIndexJs('default', '!!!changed!!!')
     expectAppEndpointToContain('`!!!changed!!!` example response', done)
   })
+
+  // TODO fill in missing tests, plenty of room for other tests
+  it('recovers after broken app is repaired')
+  it('builds app before restarting')
 })
