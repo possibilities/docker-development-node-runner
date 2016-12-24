@@ -60,9 +60,6 @@ const runProcess = (command, options) => {
   childProcess.stderr.on('data', d => outputLines.push(d.toString()))
   childProcess.stdout.on('data', d => outputLines.push(d.toString()))
 
-  childProcess.stdout.pipe(process.stdout)
-  childProcess.stderr.pipe(process.stderr)
-
   registerChildProcess(command, childProcess)
 
   return running
