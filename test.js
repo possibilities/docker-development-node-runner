@@ -29,13 +29,13 @@ const URL = `http://localhost:${PORT}`
 
 // NOTE testing is rather shallow
 
-const waitForBodyToContain = (running, expectedBody, done) => {
+const waitForBodyToContain = (childProcess, expectedBody, callback) => {
   setTimeout(() => {
     request(URL, (error, res) => {
       if (error) return done(error)
 
       assert.equal(res.body, expectedBody)
-      terminate(running.pid, done)
+      terminate(childProcess.pid, callback)
     })
   }, TIMEOUT)
 }
